@@ -16,3 +16,12 @@ class Users(BaseModel):
 
     class Meta:
         db_name = 'users'
+
+
+class Channels(BaseModel):
+    channel_id = BigIntegerField(primary_key=True)
+    channel_name = CharField(max_length=200, null=True)
+    channel_url = CharField(max_length=200, null=True)
+
+    class Meta:
+        db_name = 'channels'

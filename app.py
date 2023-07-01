@@ -1,5 +1,6 @@
 from aiogram import executor
 
+from handlers.admins.admin_handlers import register_admin_handlers_py
 from handlers.users.user_handlers import register_users_py
 from loader import dp
 import handlers
@@ -10,6 +11,7 @@ async def on_startup(dispatcher):
     await set_default_commands(dispatcher)
 
     register_users_py(dispatcher)
+    register_admin_handlers_py(dispatcher)
 
 
 if __name__ == '__main__':

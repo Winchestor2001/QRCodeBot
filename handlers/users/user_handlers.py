@@ -2,13 +2,14 @@ import os
 
 from aiogram.dispatcher import FSMContext
 
-from database.connections import add_user
-from keyboards.inline_btns import qrcode_settings_btn
+from database.connections import add_user, get_all_channels
+from keyboards.inline_btns import qrcode_settings_btn, support_btn, invite_channel_btn
 from loader import bot, dp
 from aiogram import Dispatcher
 from aiogram.types import Message, CallbackQuery, InputFile, InputMediaPhoto
 from keyboards.reply_btns import *
 from states.AllStates import UserStates
+from utils.check_invite_to_channels import check_invite
 from utils.usefull_funcs import *
 
 
@@ -16,17 +17,28 @@ async def start_bot_handler(message: Message):
     user_id = message.from_user.id
     username = message.from_user.username
 
-    btn = await start_menu_btn()
     await add_user(user_id, username)
-    await message.answer("Hi", reply_markup=btn)
+    channels = await get_all_channels()
+    is_invited = await check_invite(user_id, channels)
+    if is_invited:
+        btn = await start_menu_btn()
+        await message.answer("Hi", reply_markup=btn)
+    else:
+        btn = await invite_channel_btn(channels)
+        await message.answer("Please subscribe:", reply_markup=btn)
 
 
 async def info_handler(message: Message):
-    await message.answer("Info")
+    await message.answer(
+        "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
+        "📑 Introducing my QR code bot! This powerful bot can create custom QR codes with various features. It allows you to generate QR codes with different colors, adding a vibrant touch to your codes. Not only that, but you can also incorporate images into your QR codes, making them visually appealing and unique. And if you want to add some dynamic elements, you can even create QR codes with animated GIFs. With this bot, you have the flexibility to customize your QR codes like never before. Start using it to create eye-catching codes for promotions, events, or personal use. Explore the possibilities and let your QR codes stand out from the crowd!\n"
+        "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"
+    )
 
 
 async def support_handler(message: Message):
-    await message.answer("Info")
+    btn = await support_btn()
+    await message.answer("Support info", reply_markup=btn)
 
 
 async def qrcode_options_handler(message: Message):
@@ -156,12 +168,22 @@ async def qrcode_setting_color_callback(c: CallbackQuery, state: FSMContext):
 async def qrcode_finish_callback(c: CallbackQuery, state: FSMContext):
     user_id = c.from_user.id
     bot_username = (await bot.get_me()).username
-    data = await state.get_data()
     filename = f"qr_{user_id}.png"
     await c.message.edit_caption(f"By @{bot_username}")
     await c.message.answer_document(InputFile(filename, f"@{bot_username}.png"))
     await state.finish()
     await delete_medies(user_id)
+
+
+async def check_invited_user_callback(c: CallbackQuery):
+    user_id = c.from_user.id
+    channels = await get_all_channels()
+    is_invited = await check_invite(user_id, channels)
+    if is_invited:
+        await c.message.delete()
+        await start_bot_handler(c.message)
+    else:
+        await c.answer("❗️ You don't subscribe", show_alert=True)
 
 
 def register_users_py(dp: Dispatcher):
@@ -174,10 +196,12 @@ def register_users_py(dp: Dispatcher):
 
     dp.register_message_handler(qrcode_options_state, state=UserStates.select_qr_option, content_types=['text'])
     dp.register_message_handler(get_qrcode_text_state, state=UserStates.get_text, content_types=['text'])
-    dp.register_message_handler(get_qrcode_get_media_text_state, state=UserStates.get_media_text, content_types=['text'])
+    dp.register_message_handler(get_qrcode_get_media_text_state, state=UserStates.get_media_text,
+                                content_types=['text'])
     dp.register_message_handler(get_qrcode_media_state, state=UserStates.get_media,
                                 content_types=['animation', 'photo', 'text'])
 
     dp.register_callback_query_handler(qrcode_finish_callback, text="qr_finish")
+    dp.register_callback_query_handler(check_invited_user_callback, text="invited")
     dp.register_callback_query_handler(qrcode_setting_scale_callback, text_contains="scale")
     dp.register_callback_query_handler(qrcode_setting_color_callback, text_contains="color")

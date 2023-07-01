@@ -23,3 +23,36 @@ async def qrcode_settings_btn(is_media=False):
     )
     return btn
 
+
+async def support_btn():
+    btn = InlineKeyboardMarkup()
+    btn.add(InlineKeyboardButton(f"👤 Administrator", url="t.me/winchestor_dev"))
+    return btn
+
+
+async def admin_panel_btn():
+    btn = InlineKeyboardMarkup(row_width=2)
+    btn.add(
+        InlineKeyboardButton("Channels", callback_data="channels_list"),
+        InlineKeyboardButton("Add Channel", callback_data="add_channel"),
+        InlineKeyboardButton("Mailing", callback_data="mailing"),
+    )
+    return btn
+
+
+async def channels_list_btn(channels):
+    btn = InlineKeyboardMarkup(row_width=2)
+    btn.add(
+        *[InlineKeyboardButton(f"{n} - ❌", callback_data=f"del_channel:{item['channel_id']}") for n, item in enumerate(channels, 1)]
+    )
+    return btn
+
+
+async def invite_channel_btn(channels):
+    btn = InlineKeyboardMarkup(row_width=1)
+    btn.add(
+        *[InlineKeyboardButton(f"▫️ {item['channel_name']}", url=f"{item['channel_url']}") for item in channels],
+        InlineKeyboardButton("✅ Submit", callback_data="invited")
+    )
+    return btn
+

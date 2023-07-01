@@ -8,4 +8,7 @@ class UserStates(StatesGroup):
 
     select_qr_option = State()
 
+    add_channel = State()
+    mailing = State()
+
 

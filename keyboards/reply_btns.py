@@ -1,6 +1,9 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 
+remove_btn = ReplyKeyboardRemove()
+
+
 async def start_menu_btn():
     btn = ReplyKeyboardMarkup(resize_keyboard=True)
     btn.row("✏️ QR Code generation")
