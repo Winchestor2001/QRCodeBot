@@ -6,7 +6,7 @@ from database.connections import add_user, get_all_channels
 from keyboards.inline_btns import qrcode_settings_btn, support_btn, invite_channel_btn
 from loader import bot, dp
 from aiogram import Dispatcher
-from aiogram.types import Message, CallbackQuery, InputFile, InputMediaPhoto
+from aiogram.types import Message, InputFile, InputMediaPhoto, CallbackQuery
 from keyboards.reply_btns import *
 from states.AllStates import UserStates
 from utils.check_invite_to_channels import check_invite
@@ -19,7 +19,8 @@ async def start_bot_handler(message: Message):
 
     await add_user(user_id, username)
     channels = await get_all_channels()
-    is_invited = await check_invite(user_id, channels)
+    # is_invited = await check_invite(user_id, channels)
+    is_invited = True
     if is_invited:
         btn = await start_menu_btn()
         await message.answer("Hi", reply_markup=btn)
